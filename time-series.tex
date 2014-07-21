@@ -1,0 +1,54 @@
+\documentclass{article}
+\usepackage{amsmath}
+\title{Time Series}
+\author{Caleb Reach}
+\date{\today}
+\let\V\mathbf
+\begin{document}
+\maketitle
+Suppose that we wish to visualize a bandlimited signal $f(t)$.  We can define the visualization as
+\[
+u(\V x) = \int_{-\infty}^{\infty} \delta\left(\V x - \begin{bmatrix}t\\f(t)\end{bmatrix}\right)\,dt.
+\]
+In practice, we wish to compute a sampled image.  Because $u(\V x)$ is not bandlimited, it cannot be sampled directly.  Therefore, we compute
+\[
+v = g*u
+\]
+where $g$ is the impulse response of a anti-aliasing lowpass filter.  The point in the sampled image with integer coordinates $(x,y)$ is then given by
+\[
+v\left(\begin{bmatrix}xT_x\\yT_y\end{bmatrix}\right)
+\]
+for horizontal sampling rate $T_x$ and vertical sampling rate $T_y$.
+
+Because $f(t)$ is bandlimited, it is well-approximated by sampling followed by linear interpolation, provided that the sampling rate is sufficiently higher than twice the highest frequency in $f(t)$.  Let $T_l$ be the sampling period given by this sampling rate.  Therefore,
+\[
+f \approx l*(\mathrm{III}_{T_l} f),
+\]
+where $l$ is the impulse response of a linear interpolation filter, and thus
+\begin{align*}
+v(\V x) &\approx g(\V x)*\int_{-\infty}^{\infty} \delta\left(\V x - \begin{bmatrix}t\\(l*(\mathrm{III}_{T_l} f))(t)\end{bmatrix}\right)\,dt\\
+&= g(\V x)*\sum_{i=-\infty}^{\infty}\frac{1}{T_l}\int_{0}^{1}\delta\left(\V x - \begin{bmatrix}iT_l + tT_l\\(1 - t)f(iT_l) + tf((i+1)T_l)\end{bmatrix}\right)\,dt.
+\end{align*}
+Notice that when $T_l \ll T_x$, the lines constructed by linear interpolation are nearly vertical in the sampled image.  Therefore, it is reasonable to approximate subexpression $iT_l + tT_l$ by $(i + 0.5)T_l$.  We thus arrive at the approximation
+\[
+\hat v(\V x) = g(\V x)*\sum_{i=-\infty}^{\infty}\frac{1}{T_l}\int_{0}^{1}\delta\left(\V x - \begin{bmatrix}(i + 0.5)T_l\\(1 - t)f(iT_l) + tf((i+1)T_l)\end{bmatrix}\right)\,dt.
+\]
+If we define
+\[
+g_I\left(\begin{bmatrix}x\\y\end{bmatrix}\right) = \int_{-\infty}^y g\left(\begin{bmatrix}x\\t\end{bmatrix}\right)\,dt
+\]
+then we can rewrite $\hat v$ as
+\begin{align*}
+\hat v(\V x) &= g_I(\V x)*\sum_{i=-\infty}^{\infty}\frac{1}{T_l}\left(
+\delta\left(\V x - \begin{bmatrix}(i + 0.5)T_l\\(1 - t)f(iT_l))\end{bmatrix}\right) -
+\delta\left(\V x - \begin{bmatrix}(i + 0.5)T_l\\tf((i+1)T_l)\end{bmatrix}\right)\right)\\
+&= \frac{1}{T_l}\sum_{i=-\infty}^{\infty}
+g_I\left(\V x - \begin{bmatrix}(i + 0.5)T_l\\(1 - t)f(iT_l))\end{bmatrix}\right) -
+g_I\left(\V x - \begin{bmatrix}(i + 0.5)T_l\\tf((i+1)T_l)\end{bmatrix}\right).
+\end{align*}
+Notice that if $g(\V x)$ is compactly supported then
+\[
+g_D = g_I(\V x) - g_I\left(\V x - \begin{bmatrix}0\\T_y\end{bmatrix}\right)
+\]
+is also compactly supported.  We can thus produce an image by adding scaled copies of $g_D$ at the start and ends of each line in the linear interpolation and then discretely integrating the image.  To improve uniformity, each sampling of $g_D$ can be normalized.
+\end{document}
