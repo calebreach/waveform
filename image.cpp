@@ -15,6 +15,12 @@ Image::~Image() {
   delete data;
 }
 
+void Image::integrateY() {
+  int size = width*height;
+  for (int i=width; i<size; i++)
+    data[i] += data[i - width];
+}
+
 static uint16_t quantize(float value) {
   int v = ((1<<16)*value);
   if (v > UINT16_MAX) return UINT16_MAX;

@@ -2,11 +2,13 @@
 
 class Image;
 
-double lanczos(double t);
-double lanczosIntegral(double t);
+double lanczos(double t, int radius=3);
+double lanczosIntegral(double t, int radius=3);
 
 class LanczosRasterizer {
+  int radius;
+
 public:
-  LanczosRasterizer();
-  void drawLine(Image& img, double x, double y1, double y2);
+  LanczosRasterizer(int radius);
+  void drawLine(Image& img, float x, float y1, float y2);
 };
