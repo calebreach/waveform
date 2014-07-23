@@ -45,17 +45,22 @@ then we can rewrite $\hat v$ as
 \hat v(\V x) &= g_I(\V x)*\sum_{i=-\infty}^{\infty}\frac{\delta(\V x - \V \alpha_i) - \delta(\V x - \V \beta_i)}{T_l\|\V\beta_i - \V\alpha_i\|}\\
 &= \sum_{i=-\infty}^{\infty}\frac{g_I(\V x - \V \alpha_i) - g_I(\V x - \V \beta_i)}{T_l\|\V\beta_i - \V\alpha_i\|}.
 \end{align*}
-If $\|\V\beta_i - \V\alpha_i\|$ is close to zero (i.e. when neighboring samples have similar values), numerical stability issues arise.  Therefore, it is useful to use the following numerically-stable approximation:
-\[
-\hat v(\V x) \approx \sum_{i=-\infty}^{\infty}
-\begin{dcases}
-\frac{g_I(\V x - (\V \alpha_i + \V \beta_i)/2)}{T_l} & \|\V\beta_i - \V\alpha_i\| < \epsilon\\
-\frac{g_I(\V x - \V \alpha_i) - g_I(\V x - \V \beta_i)}{T_l\|\V\beta_i - \V\alpha_i\|} & \text{otherwise}
-\end{dcases}
-\]
 Notice that if $g(\V x)$ is compactly supported then
 \[
 g_D = g_I(\V x) - g_I\left(\V x - \begin{bmatrix}0\\T_y\end{bmatrix}\right)
 \]
 is also compactly supported.  We can thus produce a line image by adding scaled copies of $g_D$ at the start and ends of each line in the linear interpolation and then calculating the cumulative sum in the y direction once at the end, in which case drawing a line is a constant-time operation.  To improve uniformity, each sampling of $g_D$ should be normalized.
+
+If $\|\V\beta_i - \V\alpha_i\|$ is close to zero (i.e. when neighboring samples have similar values), numerical stability issues arise.  We can approximate this by taking the average of two copies of $g$.  The summand of $\hat v(\V x)$ can be seen as the convolution of $g$ centered at the midpoint between $\V \alpha_i$ and $\V \beta_i$ with a vertical box filter kernel.  This box kernel can be approximated by the average of two dirac delta functions.  The second moment of the box function with width $w$ is $w^2/3$.  The second moment of the average of two dirac delta functions located at $\pm a$ is $a^2$.  Solving $w^2/3 = a^2$ for $a$ gives $\pm w/\sqrt{3}$.  Looking in the frequency domain reveals that $\delta(t \pm w/\sqrt{3})$ well-approximates the box kernel for frequencies with periods sufficiently longer than $w$.
+
+
+% We approximate the frequency response of the boxcar function by the frequency response of two summed deltas.  We only care about the accuracy of the approximation below the cutoff of the anti-aliasing filter.  Matching standard deviations of uniform distribution and .
+% Therefore, it is useful to use the following numerically-stable approximation:
+% \[
+% \hat v(\V x) \approx \sum_{i=-\infty}^{\infty}
+% \begin{dcases}
+% \frac{g_I(\V x - (\V \alpha_i + \V \beta_i)/2)}{T_l} & \|\V\beta_i - \V\alpha_i\| < \epsilon\\
+% \frac{g_I(\V x - \V \alpha_i) - g_I(\V x - \V \beta_i)}{T_l\|\V\beta_i - \V\alpha_i\|} & \text{otherwise}
+% \end{dcases}
+% \]
 \end{document}

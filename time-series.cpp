@@ -36,9 +36,17 @@ int main() {
   Image img(100, 100);
 
   LanczosRasterizer rast(3);
-  int n = 44100;
-  for (float i=0; i<n; i++)
-    rast.drawLine(img, i/(float)n, 10, 50);
+  // rast.drawLine(img,10,20,30);
+  // for (int i=0; i<10; i++)
+  //   rast.drawLine(img, 4 + i*9, 20, 20 + i*0.5f);
+
+  rast.drawLine(img, 30, 20, 20);
+  rast.drawLine(img, 50, 20, 25);
+  rast.drawLine(img, 60, 20, 30);
+
+  // for (int i=0; i<10; i++)
+  //     rast.drawLine(img, 4 + i*9, 20, 20 + i*0.04);
+
 
   img.integrateY();
   img.savePNG("out.png");
