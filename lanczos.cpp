@@ -144,6 +144,9 @@ static const float deltaOffsetFactor = (1.0f/6.0f)*(3.0f - sqrtf(3.0f));
 
 // TODO handle case where y1 ~== y2
 void LanczosRasterizer::drawLine(Image& img, float x, float y1, float y2) {
+  if (y1 > y2)
+    swap(y1,y2);
+  
   float scale;
   EndPointMode mode1, mode2;
 
