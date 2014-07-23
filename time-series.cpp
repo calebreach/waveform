@@ -40,12 +40,12 @@ int main() {
   // for (int i=0; i<10; i++)
   //   rast.drawLine(img, 4 + i*9, 20, 20 + i*0.5f);
 
-  rast.drawLine(img, 30, 20, 20);
-  rast.drawLine(img, 50, 20, 25);
-  rast.drawLine(img, 60, 20, 30);
+  // rast.drawLine(img, 30, 20, 20);
+  // rast.drawLine(img, 50, 20, 25);
+  // rast.drawLine(img, 60, 20, 30);
 
-  // for (int i=0; i<10; i++)
-  //     rast.drawLine(img, 4 + i*9, 20, 20 + i*0.04);
+  for (int i=0; i<10; i++)
+      rast.drawLine(img, 4 + i*9, 20, 20 + i*0.09);
 
 
   img.integrateY();

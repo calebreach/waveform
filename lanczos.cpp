@@ -36,52 +36,72 @@ double lanczosIntegral(double t, int radius) {
 LanczosRasterizer::LanczosRasterizer(int radius) : radius(radius) {
 }
 
-static void getXCoefs(float dx, int radius, float* coefs) {
+static void getCoefs(float dx, int radius, float* coefs) {
   int size = radius*2;
   for (int i=0; i<size; i++)
     coefs[i] = lanczos(dx + (i - radius), radius);
 }
 
-// TODO refactor
+static void getIntegratedCoefs(float dy, int radius, float* coefs) {
+  int size = radius*2 + 1;
+  for (int i=0; i<size; i++)
+    coefs[i] = lanczosIntegral(dy + (i - radius), radius);
+}
+
+static void diffCoefs(float* coefs, int size) {
+  float last = 0;
+  for (int i=0; i<size; i++) {
+    float cur = coefs[i];
+    coefs[i] -= last;
+    last = cur;
+  }
+}
+
+static void negateCoefs(float* coefs, int size) {
+  for (int i=0; i<size; i++)
+    coefs[i] = -coefs[i];
+}
+
+// static void getYCoefs(float dy, int radius, float* coefs, EndPointMode mode) {
+//   int size = radius*2 + 1;
+//   double last = 0;
+//   for (int i=0; i<size; i++) {
+//     double pos = dy + (i - radius);
+//     double cur;
+//     switch (mode) {
+//       case integratedEndPoint:
+//         cur = lanczosIntegral(pos, radius);
+//         break;
+
+//       case integratedNegatedEndPoint:
+//         cur = -lanczosIntegral(pos, radius);
+//         break;
+
+//       case deltaEndPoint:
+//         cur = lanczos(pos, radius);
+//         break;
+//     }
+//     coefs[i] = (float)(cur - last);
+//     cout << coefs[i] << endl;
+//     last = cur;
+//   }
+// }
+
+void normalizeCoefs(float* coefs, int size) {
+  float scale = 0.0;
+  for (int i=0; i<size; i++)
+    scale += coefs[i];
+  scale = 1.0f/scale;
+  for (int i=0; i<size; i++)
+    coefs[i] *= scale;
+}
+
 enum EndPointMode {
   integratedEndPoint,
   integratedNegatedEndPoint,
   deltaEndPoint
 };
 
-static void getYCoefs(float dy, int radius, float* coefs, EndPointMode mode) {
-  int size = radius*2 + 1;
-  double last = 0;
-  for (int i=0; i<size; i++) {
-    double pos = dy + (i - radius);
-    double cur;
-    switch (mode) {
-      case integratedEndPoint:
-        cur = lanczosIntegral(pos, radius);
-        break;
-
-      case integratedNegatedEndPoint:
-        cur = -lanczosIntegral(pos, radius);
-        break;
-
-      case deltaEndPoint:
-        cur = lanczos(pos, radius);
-        break;
-    }
-    coefs[i] = (float)(cur - last);
-    cout << coefs[i] << endl;
-    last = cur;
-  }
-}
-
-void normalizeCoefs(float* coefs, int size) {
-  float scale = 0.0;
-  for (int i=0; i<size; i++)
-    scale += coefs[i];
-  scale = 1.0f/fabs(scale);
-  for (int i=0; i<size; i++)
-    coefs[i] *= scale;
-}
 
 void drawEndPoint(Image& img, float* xcoefs, int xi, float y, int radius, EndPointMode mode) {
   int xsize = radius*2;
@@ -90,8 +110,19 @@ void drawEndPoint(Image& img, float* xcoefs, int xi, float y, int radius, EndPoi
   float ycoefs[radius*2+1];
   int yi = (int)y;
   float dy = yi - y;
-  getYCoefs(dy, radius, ycoefs, mode);
-  normalizeCoefs(ycoefs, ysize);
+
+  if (mode == deltaEndPoint) {
+    getCoefs(dy, radius, ycoefs);
+    ycoefs[ysize-1] = 0;
+    normalizeCoefs(ycoefs, ysize);
+    diffCoefs(ycoefs, ysize);
+  } else {
+    getIntegratedCoefs(dy, radius, ycoefs);
+    diffCoefs(ycoefs, ysize);
+    normalizeCoefs(ycoefs, ysize);
+    if (mode == integratedNegatedEndPoint)
+      negateCoefs(ycoefs, ysize);
+  }
 
   xi -= radius - 1;
   yi -= radius - 1;
@@ -133,7 +164,7 @@ void LanczosRasterizer::drawLine(Image& img, float x, float y1, float y2) {
   float xcoefs[radius*2];
   int xi = (int)x;
   float dx = xi - x;
-  getXCoefs(dx, radius, xcoefs);
+  getCoefs(dx, radius, xcoefs);
   normalizeCoefs(xcoefs, xsize);
   for (int i=0; i<xsize; i++)
     xcoefs[i] *= scale;
