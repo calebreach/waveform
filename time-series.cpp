@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include <math.h>
 #include "image.h"
 #include "lanczos.h"
 
@@ -44,8 +45,19 @@ int main() {
   // rast.drawLine(img, 50, 20, 25);
   // rast.drawLine(img, 60, 20, 30);
 
-  for (int i=0; i<10; i++)
-      rast.drawLine(img, 4 + i*9, 20, 20 + i*0.09);
+  float last = 0;
+  for (int i=0; i<40000; i++) {
+    float pos = i/40000.0f;
+    float cur = sin(pos*M_PI*2*20);
+    // float cur = (i & (1 << 1)) ? 1 : -1;
+    const float scale = 30;
+    float y1 = 50 + last*scale;
+    float y2 = 50 + cur*scale;
+    if (y1 > y2)
+      swap(y1,y2);
+    rast.drawLine(img, 10 + pos*80, y1, y2);
+    last = cur;
+  }
 
 
   img.integrateY();

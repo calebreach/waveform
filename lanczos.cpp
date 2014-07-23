@@ -102,7 +102,6 @@ enum EndPointMode {
   deltaEndPoint
 };
 
-
 void drawEndPoint(Image& img, float* xcoefs, int xi, float y, int radius, EndPointMode mode) {
   int xsize = radius*2;
   int ysize = radius*2 + 1;
