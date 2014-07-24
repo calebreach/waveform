@@ -54,7 +54,7 @@ void colormap(float input, float& r, float& g, float& b) {
   if (i >= size-1) {
     i = size - 2;
     fi = size - 1;
-  } else if (fi < 0) {
+  } else if (i < 0) {
     i = 0;
     fi = 0;
   }

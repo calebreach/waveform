@@ -146,7 +146,7 @@ static const float deltaOffsetFactor = (1.0f/6.0f)*(3.0f - sqrtf(3.0f));
 void LanczosRasterizer::drawLine(Image& img, float x, float y1, float y2) {
   if (y1 > y2)
     swap(y1,y2);
-  
+
   float scale;
   EndPointMode mode1, mode2;
 
@@ -159,7 +159,9 @@ void LanczosRasterizer::drawLine(Image& img, float x, float y1, float y2) {
   } else {
     mode1 = integratedEndPoint;
     mode2 = integratedNegatedEndPoint;
-    scale = 1.0f/(y2 - y1);
+    float dist = y2 - y1;
+    scale = (dist + 1)/(dist); // approximation
+    // scale = 1.0f;
   }
 
   int xsize = radius*2;

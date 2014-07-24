@@ -2,11 +2,12 @@
 #include "colormap.h"
 #include <assert.h>
 #include <png.h>
+#include <math.h>
 
 using namespace std;
 
 Image::Image(int width, int height) : width(width), height(height) {
-  int size = width*height;
+  int size = getSize();
   data = new float[size];
   fill_n(data, size, 0);
 }
@@ -19,6 +20,51 @@ void Image::integrateY() {
   int size = width*height;
   for (int i=width; i<size; i++)
     data[i] += data[i - width];
+}
+
+void Image::log(float cutoff) {
+  int size = width*height;
+  for (int i=0; i<size; i++) {
+    if (data[i] < cutoff)
+      data[i] = cutoff;
+    data[i] = log10f(data[i]);
+  }
+}
+
+void Image::clip(float low, float high) {
+  int size = width*height;
+  for (int i=0; i<size; i++) {
+    if (data[i] < low)  data[i] = low;
+    if (data[i] > high) data[i] = high;
+  }
+}
+
+float Image::quantile(float percent) {
+  int size = getSize();
+  float* dataCopy = new float[size];
+  float* end = copy_if(data, data + size, dataCopy, [](float v) { return v > 0; });
+  size = end - dataCopy;
+  int i = (int)(percent*size);
+  if (i < 0) i = 0;
+  if (i > size-1) i = size-1;
+
+  float* nth = dataCopy + i;
+  nth_element(dataCopy, nth, end);
+  float result = *nth;
+  delete dataCopy;
+  return result;
+}
+
+void Image::normalize() {
+  float min, scale;
+  int size = getSize();
+  auto minmax_pair = minmax_element(data, data + size);
+  min = *minmax_pair.first;
+  scale = *minmax_pair.second - min;
+  if (scale != 0.0f) scale = 1.0f/scale;
+
+  for (int i=0; i<size; i++)
+    data[i] = scale*(data[i] - min);
 }
 
 static uint16_t quantize(float value) {
@@ -36,13 +82,12 @@ static void setComponent(png_byte* data, float value) {
 
 static const int bytes_per_pixel = 6;
 
-static void dataToPixels(float* data, png_byte* pixels, int size,
-                         float scale, float min)
+static void dataToPixels(float* data, png_byte* pixels, int size)
 {
   for (int i=0; i<size; i++) {
     int pixel_index = i*bytes_per_pixel;
     float r, g, b;
-    colormap(scale*(data[i] - min), r, g, b);
+    colormap(data[i], r, g, b);
     setComponent(pixels + pixel_index,     r);
     setComponent(pixels + pixel_index + 2, g);
     setComponent(pixels + pixel_index + 4, b);
@@ -50,15 +95,6 @@ static void dataToPixels(float* data, png_byte* pixels, int size,
 }
 
 void Image::savePNG(const string& path) {
-  float min, scale;
-  {
-    int size = width*height;
-    auto minmax_pair = minmax_element(data, data + size);
-    min = *minmax_pair.first;
-    scale = *minmax_pair.second - min;
-    if (scale != 0.0f) scale = 1.0f/scale;
-  }
-
   FILE* fp = fopen(path.c_str(), "wb");
   png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
   assert(png_ptr);
@@ -76,7 +112,7 @@ void Image::savePNG(const string& path) {
 
   png_byte* pixel_data = new png_byte[width*bytes_per_pixel];
   for (int y=0; y<height; y++) {
-    dataToPixels(data + width*y, pixel_data, width, scale, min);
+    dataToPixels(data + width*y, pixel_data, width);
     png_write_row(png_ptr, pixel_data);
   }
 

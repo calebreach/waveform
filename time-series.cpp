@@ -8,11 +8,11 @@ using namespace std;
 
 int main() {
   int width = 800;
-  int height = 800;
+  int height = 240;
   Image img(width, height);
   LanczosRasterizer rast(3);
 
-  SndfileHandle sndfile("in.flac");
+  SndfileHandle sndfile("in-dnb.flac");
   if (!sndfile) {
     cerr << "couldn't find input file" << endl;
     return 1;
@@ -49,5 +49,10 @@ int main() {
   // }
 
   img.integrateY();
+  float low = img.quantile(0.02);
+  float high = img.quantile(0.98);
+  // img.log(0.1);
+  img.clip(low,high);
+  img.normalize();
   img.savePNG("out.png");
 }
