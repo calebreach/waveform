@@ -10,5 +10,5 @@ class LanczosRasterizer {
 
 public:
   LanczosRasterizer(int radius);
-  void drawLine(Image& img, float x, float y1, float y2);
+  void drawLine(Image& img, float x, float y1, float y2, float period);
 };

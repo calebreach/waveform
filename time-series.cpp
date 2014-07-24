@@ -24,12 +24,13 @@ int main() {
   int numRead;
   float last = 0;
   int start = 0;
+  float period = width/(float)sndfile.frames();
   while ((numRead = sndfile.read(buffer, bufSize))) {
     cout << "second" << endl;
     for (int i=0; i<numRead; i+=numChannels) {
       float pos = (start+i)/(float)size;
       float cur = 0.5f*height + 0.4f*height*buffer[i];
-      rast.drawLine(img, pos*width, last, cur);
+      rast.drawLine(img, pos*width, last, cur, period);
       last = cur;
     }
     start += numRead;
@@ -52,7 +53,7 @@ int main() {
   float low = img.quantile(0.02);
   float high = img.quantile(0.98);
   // img.log(0.1);
-  img.clip(low,high);
+  // img.clip(low,high);
   img.normalize();
   img.savePNG("out.png");
 }

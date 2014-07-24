@@ -143,24 +143,26 @@ void drawEndPoint(Image& img, float* xcoefs, int xi, float y, int radius, EndPoi
 static const float deltaOffsetFactor = (1.0f/6.0f)*(3.0f - sqrtf(3.0f));
 
 // TODO handle case where y1 ~== y2
-void LanczosRasterizer::drawLine(Image& img, float x, float y1, float y2) {
+void LanczosRasterizer::drawLine(Image& img, float x, float y1, float y2, float period) {
   if (y1 > y2)
     swap(y1,y2);
 
   float scale;
   EndPointMode mode1, mode2;
 
+  float dist = y2 - y1;
+  float len = sqrtf(dist*dist + period*period);
+
   if (y2 - y1 < 0.1f) {
     mode1 = mode2 = deltaEndPoint;
-    scale = 0.5f;
+    scale = 0.5f*len;
     float offset = (y2 - y1)*deltaOffsetFactor;
     y1 += offset;
     y2 -= offset;
   } else {
     mode1 = integratedEndPoint;
     mode2 = integratedNegatedEndPoint;
-    float dist = y2 - y1;
-    scale = (dist + 1)/(dist); // approximation
+    scale = len/dist;
     // scale = 1.0f;
   }
 
