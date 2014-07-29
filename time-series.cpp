@@ -7,8 +7,8 @@
 using namespace std;
 
 int main() {
-  int width = 800;
-  int height = 240;
+  int width = 1600;
+  int height = 480;
   Image img(width, height);
   LanczosRasterizer rast(3);
 
@@ -50,10 +50,12 @@ int main() {
   // }
 
   img.integrateY();
+  img.integrateYToMiddle();
   float low = img.quantile(0.02);
   float high = img.quantile(0.98);
   // img.log(0.1);
-  // img.clip(low,high);
+  img.clip(0,INFINITY);
   img.normalize();
+  // img.sqrt();
   img.savePNG("out.png");
 }

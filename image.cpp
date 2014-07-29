@@ -22,12 +22,29 @@ void Image::integrateY() {
     data[i] += data[i - width];
 }
 
+void Image::integrateYToMiddle() {
+  int size = width*height;
+  int middle = width*(height/2);
+  for (int i=width; i<middle; i++)
+    data[i] += data[i - width];
+  for (int i=size - width; --i>=middle;) {
+    data[i] += data[i + width];
+  }
+}
+
 void Image::log(float cutoff) {
   int size = width*height;
   for (int i=0; i<size; i++) {
     if (data[i] < cutoff)
       data[i] = cutoff;
     data[i] = log10f(data[i]);
+  }
+}
+
+void Image::sqrt() {
+  int size = width*height;
+  for (int i=0; i<size; i++) {
+    data[i] = sqrtf(data[i]);
   }
 }
 

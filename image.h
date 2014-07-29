@@ -11,9 +11,13 @@ public:
   virtual ~Image();
 
   int getSize() { return width*height; }
+  int getWidth() { return width; }
+  int getHeight() { return height; }
 
   void integrateY();
+  void integrateYToMiddle();
   void log(float cutoff);
+  void sqrt();
   void clip(float low, float high);
   float quantile(float percent);
   void normalize();

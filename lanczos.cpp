@@ -9,7 +9,6 @@
 #include <iostream>
 using namespace std;
 
-
 double lanczos(double t, int radius) {
   if (t < -radius) t = -radius;
   if (t >  radius) t =  radius;
@@ -151,11 +150,15 @@ void LanczosRasterizer::drawLine(Image& img, float x, float y1, float y2, float 
   EndPointMode mode1, mode2;
 
   float dist = y2 - y1;
-  float len = sqrtf(dist*dist + period*period);
+  // float len = sqrtf(dist*dist + period*period);
+  // float len = fabs((y1 + y2)/2.0f - img.getHeight()/2.0f);
+  // len = len*len;
+  float len = 1.0f;
 
   if (y2 - y1 < 0.1f) {
     mode1 = mode2 = deltaEndPoint;
     scale = 0.5f*len;
+    // scale = 0.5f;
     float offset = (y2 - y1)*deltaOffsetFactor;
     y1 += offset;
     y2 -= offset;
@@ -163,6 +166,7 @@ void LanczosRasterizer::drawLine(Image& img, float x, float y1, float y2, float 
     mode1 = integratedEndPoint;
     mode2 = integratedNegatedEndPoint;
     scale = len/dist;
+    // scale = 1.0f/dist;
     // scale = 1.0f;
   }
 
