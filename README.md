@@ -1,4 +1,6 @@
 Waveform
 ========
 
-Visualizes audio waveforms.
+Visualize audio waveforms.
+
+![Waveform](/../screenshots/misc/waveform.png?raw=true)
